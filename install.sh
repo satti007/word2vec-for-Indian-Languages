@@ -3,6 +3,7 @@ sudo apt-get install python3-setuptools python3-dev build-essential -y
 sudo apt-get -y install python3-pip
 sudo -H pip3 install -- upgrade pip3 
 sudo -H pip3 install numpy 
+sudo -H pip3 install scipy
 sudo -H pip3 install pandas
 sudo apt-get update
 

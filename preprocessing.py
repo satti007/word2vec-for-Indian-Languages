@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os
 import re
 import string
@@ -11,8 +12,8 @@ AJ_dir   = '../../data/corpora/andhrajyothy/'				# base directory for andhrajyot
 files_dir =  wiki_dir 										# AJ_dir (or) wiki_dir
 
 folders   = sorted(os.listdir(files_dir+'articles/'))		# folders with articles
-word_doc  = open(files_dir+'stats/vocab.txt','wb',0)		# txt file to store vocabulary
-sent_doc  = open(files_dir+'stats/sentences.txt','wb',0)	# txt file to store sentences
+word_doc  = open(files_dir+'stats/vocab.txt','wb',0)		# txt file to write vocabulary
+sent_doc  = open(files_dir+'stats/sentences.txt','wb',0)	# txt file to write sentences
 
 # regex for {telugu, number, puntucation-marks} 'utf-8' encoding
 re_valid    = re.compile(u'[^\u0C00-\u0C7F\u0020-\u0040\u005B-\u0060\u007B-\u007E\u000A]+')
@@ -76,6 +77,16 @@ def update_vocab_count(nums,words,sent,word_to_freq,hash_to_line,uni_sen):
 	
 	return word_to_freq,hash_to_line,uni_sen
 
+def get_bigran_count(words,bigram_to_freq):
+	for i in range(0,len(words)-1):
+		w1,w2 = words[i],words[i+1]
+		if len(re_tel(w1)) or len(re_tel(w2)):
+			if [w1,w2] not in bigram_to_freq:
+				bigram_doc.write((w+'\n').encode('utf-8'))
+				bigram_to_freq[[w1,w2]]  = 1
+			else:
+				bigram_to_freq[[w1,w2]]  = 1
+
 # save dicts (freq_count, hash_to_line -- useful if you are preprocessing the data in chunks)
 def save_dicts(word_to_freq,hash_to_line):
 	word_to_freq = dict(sorted(word_to_freq.items(),key=lambda x:x[1],reverse=True))
@@ -115,6 +126,7 @@ uni_sen 	 = 0
 file_count   = 0
 word_to_freq = {}
 hash_to_line = {}
+bigram_to_freq = {}
 
 for F in folders:
 	files = sorted(os.listdir(files_dir+'articles/'+F))
@@ -149,14 +161,6 @@ for F in folders:
 							.format(F,f,file_count,len(word_to_freq),tot_sen,uni_sen))
 		if file_count%10000 == 0:
 			save_dicts(word_to_freq,hash_to_line)
-	# 	if file_count == 10:
-	# 		break
-	# if file_count == 10:
-	# 	break
 
 save_dicts(word_to_freq,hash_to_line)
 get_stats(word_to_freq,tot_sen,uni_sen)
-
-
-
-# word_to_freq.sort_values(1,ascending=False,inplace=True)

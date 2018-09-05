@@ -58,7 +58,7 @@ uni_sen = 10.21*pow(10,6)
 get_stats(word_to_freq,tot_sen,uni_sen)
 
 # 1 -- andhrajyothy, 2 -- wiki
-# senetcnces in both sources(1&2) are unique, checked this ...
+# sentences in both sources(1&2) are unique, checked this ...
 # by comparing the hash values of each sentecne
 # tot_sen = tot_sen1 + tot_sen2 
 # uni_sen = uni_sen1 + uni_sen2 

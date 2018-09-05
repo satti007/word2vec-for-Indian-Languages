@@ -67,12 +67,10 @@ def get_rho(human_score,emb_score):
     
     return round(100*(1 - sp),3)
 
-# emb_path = '../../data/WordVec/cc.te.300.vec'
-emb_path = 'word_embds/cc.te.300.vec'
+emb_path = '../../data/embds/WordVec/cc.te.300.vec'
 embeddings,word2id,id2word = read_txt_embeddings(emb_path,False,200000)
 
-# sim_file = '../../data/WordSim/Telugu-WS.txt'
-sim_file = 'Telugu-WS.txt'
+sim_file = '../../data/WordSim/Telugu-WS.txt'
 lines    = open(sim_file).readlines()
 word1    = []
 word2    = []
@@ -105,3 +103,13 @@ OVV_idxs     = [i for i, x in enumerate(emb_score) if x == 0]
 emb_score1   = [i for i in emb_score if i!=0]
 human_score1 = [s for idx,s in enumerate(human_score) if idx not in OVV_idxs ]
 print 'rho is with out OVV words: ',get_rho(human_score1,emb_score1)
+
+
+
+count = 0
+with io.open(emb_path, 'r', encoding='utf-8', newline='\n', errors='ignore') as f:
+    for i, line in enumerate(f):
+        if i != 0:
+            count = count + 1
+
+print("Loaded %i pre-trained word embeddings." % count)
