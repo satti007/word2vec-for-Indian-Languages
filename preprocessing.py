@@ -81,7 +81,7 @@ def update_vocab_count(nums,words,sent,word_to_freq,hash_to_line,uni_sen):
 def get_bigran_count(words,bigram_to_freq):
 	for i in range(0,len(words)-1):
 		w1,w2 = words[i],words[i+1]
-		if len(re_tel.sub(r'',w1)) or len(re_tel.sub(r'',w2)):
+		if len(re_tel.sub(r'',w1)) and len(re_tel.sub(r'',w2)):
 			if (w1,w2) not in bigram_to_freq:
 				bigram_to_freq[(w1,w2)] = 1
 			else:
@@ -145,11 +145,6 @@ for F in folders:
 		text = re_valid.sub(r'',text)							# keep only {telugu chars, number, puntucation-marks}
 		text = Text(text)
 		try:
-			txt_words = text.words
-		except:
-			continue
-		bigram_to_freq = get_bigran_count(txt_words,bigram_to_freq)
-		try:
 			sentences = text.sentences
 		except:
 			continue 
@@ -170,6 +165,8 @@ for F in folders:
 			sent = sent.join(words)
 			if len(sent.strip()) > 0:
 				words = list(set(words)-set(nums))
+				txt_words = Text(sent).words
+				bigram_to_freq = get_bigran_count(txt_words,bigram_to_freq)
 				word_to_freq,hash_to_line,uni_sen = update_vocab_count(nums,words,sent,word_to_freq,hash_to_line,uni_sen)
 		file_count += 1
 		print ('{}/{} done, file_count:{}, size of vocab: {}, size of bigrams: {}, tot_sen: {}, uni_sen: {}'
@@ -179,6 +176,8 @@ for F in folders:
 		if file_count%100000 == 0:
 			bigram_to_freq = clrBigrams_1(bigram_to_freq)
 
-save_dicts(word_to_freq,bigram_to_freq,hash_to_line)
 bigram_to_freq = clrBigrams_1(bigram_to_freq)
+save_dicts(word_to_freq,bigram_to_freq,hash_to_line)
+print ('file_count:{}, size of vocab: {}, size of bigrams: {}, tot_sen: {}, uni_sen: {}'
+				.format(file_count,len(word_to_freq),len(bigram_to_freq),tot_sen,uni_sen))
 get_stats(word_to_freq,bigram_to_freq,tot_sen,uni_sen)

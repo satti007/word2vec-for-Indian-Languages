@@ -55,7 +55,7 @@ while (iter < passes):
 			print('bigrams_count: {}, phrase_count: {}'.format(bigram_count,phrase_count)) 
 			break
 		w1, w2 = bigram[1:-1].split(',')[0].strip()[1:-1],bigram[1:-1].split(',')[-1].strip()[1:-1] 
-		if len(w1) and len(w2):				# ** -- some probs due to ','
+		if len(w1) and len(w2):
 			print('bigram:{}, w1:{}, w2:{}'.format(bigram,w1,w2))
 			if checkNum(w1):
 				continue

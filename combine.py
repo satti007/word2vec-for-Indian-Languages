@@ -6,10 +6,10 @@ from collections import Counter
 wiki_dir  = '../../data/corpora/wiki/stats/'						# base directory for wiki articles
 AJ_dir    = '../../data/corpora/andhrajyothy/stats/'				# base directory for andhrajyothy articles
 
-files_dir = '../../data/corpora/combined_stats/'
+files_dir = '../../data/corpora/combined_stats/'					# save all the stats to this directory
 
-word_doc  = open(files_dir+'vocab.txt','w')		# txt file to store vocabulary
-punctuation = list(string.punctuation)			# list of special characters
+word_doc  = open(files_dir+'vocab.txt','w')							# txt file to store vocabulary
+punctuation = list(string.punctuation)								# list of special characters
 
 # write stats to a file
 def save_stats(stats):
@@ -39,6 +39,7 @@ def get_stats(word_to_freq,tot_sen,uni_sen):
 	
 	save_stats([tot_sen,uni_sen,tot_vocab,pun_vocab,tot_tokens,pun_tokens,vocab_5,vocab_10,vocab_20])
 
+# combine the vocabulary from both the sources
 def combine_vocab(AJ_vocab,wiki_vocab):
 	AJ_dict    = dict(zip(list(AJ_vocab[0]),   list(AJ_vocab[1])))
 	wiki_dict  = dict(zip(list(wiki_vocab[0]), list(wiki_vocab[1])))
