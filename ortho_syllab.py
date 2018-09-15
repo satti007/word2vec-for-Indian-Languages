@@ -3,9 +3,10 @@
 import pickle
 import pandas as pd
 
-INDIC_NLP_LIB_HOME  = '/DDP/src/indic_nlp_library'
-INDIC_NLP_RESOURCES = '/DDP/data/indic_nlp_resources'
+INDIC_NLP_LIB_HOME  = '../indic_nlp_library'									# path to the library source
+INDIC_NLP_RESOURCES = '../../data/indic_nlp_resources'							# path to the resources neede by the library
 
+# loading the library
 import sys
 sys.path.append('{}/src'.format(INDIC_NLP_LIB_HOME))
 
@@ -17,52 +18,63 @@ loader.load()
 
 from indicnlp.syllable import  syllabifier
 
+# given a word in a particular language, return the syllables
 def getSyallables(word,lang):
 	return syllabifier.orthographic_syllabify(word.decode('utf-8'),lang)
 
 # getSyallables('నాలుగు','te')
 
 
-
-
-# BELOW CODE IS FOR GETTING SYALLANLES FOR EACH WORD IN VOCAB
 '''
-INDIC_NLP_LIB_HOME  = '/home/satti/Documents/DDP/src/indic_nlp_library'
-INDIC_NLP_RESOURCES = '/home/satti/Documents/DDP/data/indic_nlp_resources'
-TELUGU_VOCAB        = '/home/satti/Documents/DDP/data/corpora/combined_stats/'
+# BELOW CODE IS FOR GETTING SYALLANLES FOR EACH WORD(with count >= cut-off) IN VOCAB (to know min and max number of syllables)
+################################################################################################################################
+INDIC_NLP_LIB_HOME  = '../indic_nlp_library'										# path to the library source
+INDIC_NLP_RESOURCES = '../../data/indic_nlp_resources'								# path to the resources neede by the library
+files_dir           = '../../data/corpora/combined_stats/'							# path to vocabulary file
 
-lang  = 'te'
-vocab = open(TELUGU_VOCAB+'vocab.txt','r').readlines()
-vocab = [v.strip() for v in vocab]
+# loading the library
+import sys
+sys.path.append('{}/src'.format(INDIC_NLP_LIB_HOME))
 
-min_len     = 100
-max_len     = 0
-tot_syllables     = {}
-word_to_syllables = {}
-print 'Orthographic Syllabification for vocabulary...'
-for idx,word in enumerate(vocab):
-	print idx,word
-	syllables = syllabifier.orthographic_syllabify(word.decode('utf-8'),lang)
-	syllables = [syl.encode('utf-8') for syl in syllables]
-	word_to_syllables[word] = syllables
-	tot_syllables.update({syl:1 for syl in syllables if syl not in tot_syllables})
-	if min_len>len(syllables):
-		min_len = len(syllables)
-	if max_len<len(syllables):
-		max_len = len(syllables)
-	if idx == 1000:
-		break
+from indicnlp import common
+common.set_resources_path(INDIC_NLP_RESOURCES)
 
-print 'Done!'
-print 'The total num of syllables are    : ',len(tot_syllables)
-print 'Min number of syllables in a word : ',min_len
-print 'Max number of syllables in a word : ',max_len
+from indicnlp import loader
+loader.load()
 
-pd.DataFrame.from_dict(data=tot_syllables,orient='index').to_csv(TELUGU_VOCAB+'tot_syllables.csv',header=None)
-pd.DataFrame.from_dict(data=word_to_syllables,orient='index').to_csv(TELUGU_VOCAB+'word_to_syllables.csv',header=None)
-with open(TELUGU_VOCAB+'word_to_syllables.pickle', 'wb') as handle:
-	pickle.dump(word_to_syllables, handle, protocol=pickle.HIGHEST_PROTOCOL)
+from indicnlp.syllable import  syllabifier
 
-with open(TELUGU_VOCAB+'word_to_syllables.pickle', 'rb') as handle:
-    word_to_syllables = pickle.load(handle)
+vocab        = pd.read_csv(files_dir +'word_to_freq.csv',header=None)				# load the word_to_freq file
+word_to_freq = dict(zip(list(vocab[0])  ,list(vocab[1])))							# convert the DataFrame to a dcit(word:freq) 
+
+cutoff = [1,2,5,10,20]					# cut-off for freq of words(i.e get syllables for only words with count>=cutoff)
+lang   = 'te'							# parameter for indic_nlp library
+
+for c in cutoff:
+	min_syll_len   = 100				# min number of syllables of a word in vocab
+	max_syll_len   = 0					# max number of syllables of a word in vocab
+	num_words      = 0					# number of words with count >= cutoff 
+	tot_syllables  = {}					# to get total number of unique-syllables in vocabulary...
+										# ... using dict for fastlookup
+	
+	print ('Started syllabification  of words with freq>={} in vocabulary...'.format(c))
+	for word in word_to_freq:
+		if word_to_freq[word] < c: 		# ignore then word if it doesn't satisfy the cutoff
+			continue
+		syllables = syllabifier.orthographic_syllabify(word.decode('utf-8'),lang)		# syllabification of word
+		tot_syllables.update({syl:1 for syl in syllables if syl not in tot_syllables})	# update the dict
+		if min_syll_len>len(syllables):													# update the min_syll_len
+			min_syll_len = len(syllables)
+		if max_syll_len<len(syllables):													# update the max_syll_len
+			max_syll_len = len(syllables)
+		num_words = num_words + 1														# update num_words
+	
+	print ('Min number of syllables in a word : ',min_syll_len)
+	print ('Max number of syllables in a word : ',max_syll_len)
+	print ('The total num of syllables are    : ',len(tot_syllables))
+	print ('The total num of words syllabified: ',num_words)
+	print ('Done!')
+	print ('#####\n')
+
+################################################################################################################################
 '''

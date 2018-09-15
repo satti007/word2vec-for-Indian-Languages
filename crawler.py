@@ -29,8 +29,8 @@ def doCrawl(start_id,end_id):
         
         url_count +=1
         print ('{}th crawled, URLS parsing done:{}, NUM_OF_SEN:{}, NUM_OF_WORDS:{}'.format(i,url_count,line_count,word_count))
-        if url_count == 10:
-            break
+        # if url_count == 10:
+        #     break
 
 def crawlAJ():
     start = 1000                # First article id 
@@ -40,7 +40,7 @@ def crawlAJ():
     # doCrawl(200000,400000)    # ... crawling time of each article increases significantly.. 
     # doCrawl(400000,end)       # ... if you do the crawling for a long time continuously 
 
-crawlAJ()
+# crawlAJ()
 #######################################################################################################################################
 
 
@@ -67,22 +67,35 @@ def getConent(article_urls,save_dir,start,end):
                     lines = text.split('.')
                     line_count += len(lines)
                     word_count += len(text.split(' '))
-                    url_file = open(save_dir+'articles/{}k_to_{}k/{}.txt'.format(int(start/1000),int(end/1000),idx),'w')
+                    url_file = open(save_dir+'articles/{}k_to_{}k/{}.txt'.format(int(start/1000),int(end/1000),idx+start),'w')
                     url_file.write(text)
                     url_file.close()
                     url_count  += 1 
-            print ('{}th crawled, URLS parsing done:{}, NUM_OF_SEN:{}, NUM_OF_WORDS:{}'.format(idx,url_count,line_count,word_count))
+            print ('{}th crawled, URLS parsing done:{}, NUM_OF_SEN:{}, NUM_OF_WORDS:{}'.format(idx+start,url_count,line_count,word_count))
         except:
             print(addr)
             print("##ERROR##")
             continue
+        # if url_count == 10:
+        #     break
 
 def crawlContent(home_url,save_dir,file):
-    article_urls = open(save_dir+file).readlines()
-    getConent(article_urls,save_dir,start,100000)    # call each of these fuctions one at a time
-    # getConent(article_urls,save_dir,100000,200000) # each to monitor & check progress, and also...  
-    # getConent(article_urls,save_dir,100000,300000) # ... crawling time of each article increases significantly.. 
-                                                     # ... if you do the crawling for a long time continuously 
+    article_urls = open(save_dir+file,'r').readlines()
+    # getConent(article_urls,save_dir,0,50000)   # call each of these fuctions one at a time
+    # getConent(article_urls,save_dir,50000,100000)  # each to monitor & check progress, and also...  
+    getConent(article_urls,save_dir,100000,150000) # ... crawling time of each article increases significantly.. 
+    # getConent(article_urls,save_dir,150000,231565) # ... if you do the crawling for a long time continuously 
+
+
+# A function to sort the lines in a file
+def sortFile(file_name):
+    lines = open(home_dir+file_name,'r').readlines()
+    lines.sort()
+    doc   = open(home_dir+file_name,'w')
+    for line in lines:
+        doc.write(line)
+    
+    doc.close()
 
 # A function to make sure all the elements in the given dict are distinct
 def updateDict(list_,dict_,file):
@@ -154,6 +167,7 @@ def crawlWD():
     section_urls = getSectionUrls(soup,'sectionFooter fLt w145 bdrRNone',section_urls,section_urls_doc)
     print('The total num of section_urls: {}'.format(len(section_urls)))
     section_urls_doc.close()
+    sortFile('section_urls.txt')
     
     article_urls     = {}
     article_urls_doc = open(home_dir+'article_urls.txt','w')
@@ -161,8 +175,10 @@ def crawlWD():
         print('Getting article_urls from section:{}, {}...'.format(idx,url.split('/')[-1]))
         article_urls = getArticleUrls(url,article_urls,article_urls_doc)
     
+    article_urls_doc.close()
+    sortFile('article_urls.txt')
 
-crawlWD()                                          # Collecting all the articles urls under the webdunia domian
+# crawlWD()                                          # Collecting all the articles urls under the webdunia domian
 crawlContent(home_url,home_dir,'article_urls.txt') # After collecting all the articles urls, scrape the content in each of them
 #######################################################################################################################################
 
