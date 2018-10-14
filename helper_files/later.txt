@@ -1,0 +1,12 @@
+Preprocessing:
+1. Loss of prepositions
+	- expand this to words followed by preposition
+	- also special character followed by preposition
+
+2. Examine the vocabulary and think of ways to fix problems(if any)
+3. Phrase learning
+4. MUSE --error analysis
+5. GT -- cloud API
+6. Better dictionary buliding methods
+
+
