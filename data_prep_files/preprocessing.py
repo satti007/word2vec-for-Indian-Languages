@@ -7,17 +7,19 @@ import pandas as pd
 from polyglot.text import Text
 
 wiki_dir = '../../data/corpora/wiki/'						# base directory for wiki articles
-WD_dir   = '../../data/corpora/webdunia/'					# base directory for webdunia articles
-AJ_dir   = '../../data/corpora/andhrajyothy/'				# base directory for andhrajyothy articles
+# WD_dir   = '../../data/corpora/webdunia/'					# base directory for webdunia articles
+# AJ_dir   = '../../data/corpora/andhrajyothy/'				# base directory for andhrajyothy articles
 
-files_dir =  WD_dir 										# AJ_dir (or) wiki_dir
+files_dir =  wiki_dir 										# AJ_dir (or) wiki_dir (or) WD_dir
 
 folders   = sorted(os.listdir(files_dir+'articles/'))		# folders with articles
 word_doc  = open(files_dir+'stats/vocab.txt','wb',0)		# txt file to write vocabulary
 sent_doc  = open(files_dir+'stats/sentences.txt','wb',0)	# txt file to write sentences
 
 # regex for {telugu, number, puntucation-marks} 'utf-8' encoding -- useful for wiki dump
-re_valid    = re.compile(u'[^\u0C00-\u0C7F\u0020-\u0040\u005B-\u0060\u007B-\u007E\u000A]+')
+# re_valid    = re.compile(u'[^\u0C00-\u0C7F\u0020-\u0040\u005B-\u0060\u007B-\u007E\u000A]+')
+
+re_valid    = re.compile(u'[^\u0C00-\u0C7F\u0030-\u0039\u0020\u000A]+')	# regex for {telugu, number, space, newline} 'utf-8' encoding
 re_tel      = re.compile(u'[^\u0C00-\u0C7F]+')				# regex for only telugu characters
 re_num      = re.compile(u'[^\u0030-\u0039]+')				# regex for only numerical digits
 punctuation = list(string.punctuation)						# list of special characters
@@ -154,12 +156,11 @@ for F in folders:				# loop through all article folders
 		file_count += 1
 		print ('{}/{} done, file_count:{}, size of vocab: {}, tot_sen: {}, uni_sen: {}'
 							.format(F,f,file_count,len(word_to_freq),tot_sen,uni_sen))
-		if file_count%10000 == 0:
+		if file_count%100 == 0:
 			save_dicts(word_to_freq,hash_to_line)
 		# if file_count%100 == 0:
 		# 	break
 
-print ('file_count:{}, size of vocab: {}, tot_sen: {}, uni_sen: {}'
-				.format(file_count,len(word_to_freq),tot_sen,uni_sen))
+print ('file_count:{}, size of vocab: {}, tot_sen: {}, uni_sen: {}'.format(file_count,len(word_to_freq),tot_sen,uni_sen))
 save_dicts(word_to_freq,hash_to_line)
 get_stats(word_to_freq,tot_sen,uni_sen)

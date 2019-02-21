@@ -46,8 +46,9 @@ def crawlAJ():
 
 # The below code is for crawling data from "http://telugu.webdunia.com"
 #######################################################################################################################################
-home_url = 'http://telugu.webdunia.com/'                # base directorty for saving files
-home_dir = '../../data/corpora/webdunia/'               # home_page of the website 
+# home_url = 'http://telugu.webdunia.com/'                # home_page of the website 
+home_url = 'http://tamil.webdunia.com/'                   # home_page of the website 
+home_dir = '../../../data/corpora/webdunia/tamil/'               # base directorty for saving files
 
 # Given an article url, scrape the content of that article and save it in a file
 def getConent(article_urls,save_dir,start,end):
@@ -178,8 +179,8 @@ def crawlWD():
     article_urls_doc.close()
     sortFile('article_urls.txt')
 
-# crawlWD()                                          # Collecting all the articles urls under the webdunia domian
-crawlContent(home_url,home_dir,'article_urls.txt') # After collecting all the articles urls, scrape the content in each of them
+crawlWD()                                          # Collecting all the articles urls under the webdunia domian
+# crawlContent(home_url,home_dir,'article_urls.txt') # After collecting all the articles urls, scrape the content in each of them
 #######################################################################################################################################
 
 

@@ -3,15 +3,15 @@ import numpy as np
 import pandas as pd
 from collections import Counter
 
-WD_dir    = 'WD_stats/'								# base directory for webdunia stats
-AJ_dir    = 'AJ_stats/'								# base directory for andhrajyothy stats
-wiki_dir  = 'wiki_stats/'							# base directory for wiki stats
-files_dir = 'combined_stats/'						# save all the stats to this directory
+WD_dir    = '../../data/corpora/webdunia/stats/'		# base directory for webdunia stats
+AJ_dir    = '../../data/corpora/andhrajyothy/stats/'	# base directory for andhrajyothy stats
+wiki_dir  = '../../data/corpora/wiki/stats/'			# base directory for wiki stats
+files_dir = '../../data/corpora/all_combined/stats/'	# save all the stats to this directory
 
-corpora_dir = [WD_dir,AJ_dir,wiki_dir] 				# lis of all corpora
+corpora_dir = [WD_dir,AJ_dir,wiki_dir] 					# lis of all corpora
 
-word_doc    = open(files_dir+'vocab.txt','w')		# txt file to store (combined)vocabulary
-punctuation = list(string.punctuation)				# list of special characters
+word_doc    = open(files_dir+'vocab.txt','w')			# txt file to store (combined)vocabulary
+punctuation = list(string.punctuation)					# list of special characters
 
 # write stats to a file
 def save_stats(stats):

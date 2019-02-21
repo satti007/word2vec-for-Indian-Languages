@@ -42,13 +42,16 @@ def get_arguments():
 	ap = argparse.ArgumentParser()
 	ap.add_argument('--lang'    , type=str)
 	ap.add_argument('--save_dir', type=str)
-	ap.add_argument('--word2idx', type=str)
-	ap.add_argument('--idx2word', type=str)
-	ap.add_argument('--syl2idx' , type=str)
 	ap.add_argument('--idx2syl' , type=str)
-	ap.add_argument('--word2Sylidx' , type=str)
-	ap.add_argument('--train_words'  , type=str)
-	ap.add_argument('--sampled_words', type=str)
+	ap.add_argument('--idx2word', type=str)
+	ap.add_argument('--train_words'   , type=str)
+	ap.add_argument('--sampled_words' , type=str)
+	ap.add_argument('--word2Sylidx_3' , type=str)
+	ap.add_argument('--word2Sylidx_7' , type=str)
+	ap.add_argument('--word2Sylidx_11', type=str)
+	ap.add_argument('--word2Sylidx_3to7', type=str)
+	ap.add_argument('--train_words_3to7'   , type=str)	
+	ap.add_argument('--alpha' , type=float,default = 0.001)
 	ap.add_argument('--lr'    , type=float,default = 0.05)
 	ap.add_argument('--dim'   , type=int, default = 100)
 	ap.add_argument('--ws'    , type=int, default = 5)
@@ -73,19 +76,22 @@ def get_arguments():
 	else:
 		state = 0
 	
-	lr   = args['lr']
-	ws   = args['ws']
-	dim  = args['dim']
-	neg  = args['neg']
-	lang = args['lang']
+	lr    = args['lr']
+	ws    = args['ws']
+	dim   = args['dim']
+	neg   = args['neg']
+	lang  = args['lang']
+	alpha = args['alpha']
 	epochs   = args['epochs']
 	save_dir = args['save_dir']
-	syl2idx  = loadFile(args['syl2idx'],True)
 	idx2syl  = loadFile(args['idx2syl'],True)
-	word2idx = loadFile(args['word2idx'],True)
 	idx2word = loadFile(args['idx2word'],True)
-	word2Sylidx = loadFile(args['word2Sylidx'],True)
-	
+	word2Sylidx_3  = loadFile(args['word2Sylidx_3'],True)
+	word2Sylidx_7  = loadFile(args['word2Sylidx_7'],True)
+	word2Sylidx_11 = loadFile(args['word2Sylidx_11'],True)
+	word2Sylidx_3to7 = loadFile(args['word2Sylidx_3to7'],True)
+	train_words_3to7 = loadFile(args['train_words_3to7'],False)
+
 	print ('Arguments Parsing Done!')
 	print ('Arguments details: ')
 	print ('lang: ',lang)
@@ -94,23 +100,32 @@ def get_arguments():
 	print ('ws, dim, neg, : ',ws,dim,neg)
 	print ('lr, epochs    : ',lr,epochs)
 	print ('pretrain,state: ',pretrain,state)
+	print ('alpha: ',alpha)
 	
-	return [word2idx,idx2word,syl2idx,idx2syl,word2Sylidx,train_words],[lang,lr,dim,ws,neg,epochs,save_dir,pretrain,state]
+	return [idx2syl,idx2word,train_words,word2Sylidx_3,word2Sylidx_7,word2Sylidx_11,word2Sylidx_3to7,train_words_3to7],[lang,lr,dim,ws,neg,epochs,save_dir,pretrain,state,alpha]
 
 def tofastextFormat(state,save_dir,file_name,stats_file):
-	weights_f   = np.load(save_dir+'/weights_{}.npz'.format(state))
-	all_weights = [weights_f[p] for p in sorted(weights_f.files,key=lambda s: int(s[4:]))]
-	idx2word    = np.load(stats_file+'/idx2word.npy').item()
-	emdeddings  = all_weights[0]
-	
-	file        = open(file_name,'w')
-	file.write('{} {}'.format(emdeddings.shape[0],emdeddings.shape[1]))
-	for idx in idx2word:
-		file.write('\n{} '.format(idx2word[idx]))
-		vec = ' '.join(str(d) for d in emdeddings[idx])
-		vec = vec.strip()
-		file.write(vec)
-	
-	file.close()
+weights_f   = np.load(save_dir+'/weights_{}.npz'.format(state))
+all_weights = [weights_f[p] for p in sorted(weights_f.files,key=lambda s: int(s[4:]))]
+idx2word    = np.load(stats_file+'/idx2word.npy').item()
+emdeddings  = all_weights[0]
+
+file        = open(file_name,'w')
+file.write('{} {}'.format(emdeddings.shape[0],emdeddings.shape[1]))
+for idx in idx2word:
+	file.write('\n{} '.format(idx2word[idx]))
+	vec = ' '.join(str(d) for d in emdeddings[idx])
+	vec = vec.strip()
+	file.write(vec)
+
+file.close()
 
 # tofastextFormat(2,'weights','skipgram.vec','stats')
+
+# idx2syl  = loadFile(args['idx2syl'],True)
+# idx2word = loadFile(args['idx2word'],True)
+# word2Sylidx_3  = loadFile(args['word2Sylidx_3'],True)
+# word2Sylidx_7  = loadFile(args['word2Sylidx_7'],True)
+# word2Sylidx_11 = loadFile(args['word2Sylidx_11'],True)
+# word2Sylidx_3to7 = loadFile(args['word2Sylidx_3to7'],True)
+# train_words_3to7 = loadFile(args['train_words_3to7'],False)
