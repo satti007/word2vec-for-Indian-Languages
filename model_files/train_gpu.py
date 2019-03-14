@@ -50,7 +50,7 @@ n_batches   = len(train_words)//batch_size
 train_words = train_words[:n_batches*batch_size]
 
 embd_dim = dim
-filters  = rep_dim/5
+filters  = rep_dim/4
 n_vocab  = len(idx2word)
 n_embds  = len(idx2syl) + 1
 
@@ -78,13 +78,15 @@ with train_graph.as_default():
 	softmax_b = tf.Variable(tf.zeros(n_vocab))
 	input_p   = tf.expand_dims(embeds_lookup, -1)
 	
+	max_1 = cnnLayer(1,embd_dim,input_p)
 	max_2 = cnnLayer(2,embd_dim,input_p)
 	max_3 = cnnLayer(3,embd_dim,input_p)
 	max_4 = cnnLayer(4,embd_dim,input_p)
-	max_5 = cnnLayer(5,embd_dim,input_p)
-	max_6 = cnnLayer(6,embd_dim,input_p)
+	# max_5 = cnnLayer(5,embd_dim,input_p)
+	# max_6 = cnnLayer(6,embd_dim,input_p)
 	
-	word_rep = tf.concat([max_2,max_3,max_4,max_5,max_6],axis=1)
+	word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+	# word_rep = tf.concat([max_2,max_3,max_4,max_5,max_6],axis=1)
 		
 	loss = tf.nn.sampled_softmax_loss(weights=softmax_w,biases=softmax_b,
 									  labels=labels,inputs=word_rep,

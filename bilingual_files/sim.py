@@ -46,8 +46,8 @@ def read_txt_embeddings(emb_path,full_vocab=False,max_vocab=200000,emb_dim=300):
     
     return embeddings,word2id,id2word
 
-# emb_path = 'cc.te.300.vec'       # path to embeddings (text)file
-emb_path = 'skipgram.vec'       # path to embeddings (text)file
+emb_path = 'cc.te.300.vec'       # path to embeddings (text)file
+# emb_path = 'skipgram.vec'       # path to embeddings (text)file
 embeddings,word2id,id2word = read_txt_embeddings(emb_path,True,400000)
 
 # return vector for a given word

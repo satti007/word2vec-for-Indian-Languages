@@ -50,21 +50,14 @@ n_batches   = len(train_words)//batch_size
 train_words = train_words[:n_batches*batch_size]
 
 embd_dim = dim
-filters  = rep_dim/5
+filters  = rep_dim/4
 n_vocab  = len(idx2word)
 n_embds  = len(idx2syl) + 1
 
 _mask        = np.ones([n_embds,embd_dim])
 _mask[-1][:] = np.zeros([1,embd_dim])
 
-log_train = open('log_train.txt','w',0)
-
-def cnnLayer(l,embd_dim,inputs):
-	layer_l = conv2d(inputs,filters,[l,embd_dim],1,'VALID')
-	max_l   = max_pool2d(layer_l,[max_syl+1-l,1],[1,1])
-	max_l   = tf.squeeze(max_l)
-	
-	return max_l
+log_train = open('log_train.txt','wb',0)
 
 train_graph = tf.Graph()
 initializer = tf.contrib.layers.xavier_initializer()
@@ -76,15 +69,8 @@ with train_graph.as_default():
 	embeds_lookup = tf.nn.embedding_lookup(embeds_matrix,inputs,max_norm=1)
 	softmax_w = tf.Variable(initializer((n_vocab,rep_dim)))
 	softmax_b = tf.Variable(tf.zeros(n_vocab))
-	input_p   = tf.expand_dims(embeds_lookup, -1)
-	
-	max_2 = cnnLayer(2,embd_dim,input_p)
-	max_3 = cnnLayer(3,embd_dim,input_p)
-	max_4 = cnnLayer(4,embd_dim,input_p)
-	max_5 = cnnLayer(5,embd_dim,input_p)
-	max_6 = cnnLayer(6,embd_dim,input_p)
-	
-	word_rep = tf.concat([max_2,max_3,max_4,max_5,max_6],axis=1)
+		
+	word_rep = tf.reduce_mean(embeds_lookup,axis=1)
 		
 	loss = tf.nn.sampled_softmax_loss(weights=softmax_w,biases=softmax_b,
 									  labels=labels,inputs=word_rep,
@@ -123,7 +109,7 @@ with tf.Session(graph=train_graph) as sess:
 				avg_loss   = 0
 				start_time = time.time()
 			iteration = iteration + 1
-		print ('Weights saved at {} epoch, avg_epoch_loss: {:.4f}'.format(e+1+state,epoch_loss/(iteration)))
+		print (('Weights saved at {} epoch, avg_epoch_loss: {:.4f}'.format(e+1+state,epoch_loss/(iteration))).encode('utf-8'))
 		log_train.write('Weights saved at {} epoch, avg_epoch_loss: {:.4f}\n'.format(e+1+state,epoch_loss/(iteration)))
 		Wts = [p.eval(session=sess) for p in tf.trainable_variables()]
 		np.savez(save_dir+"/weights_"+str(e+1+state)+".npz", *Wts)

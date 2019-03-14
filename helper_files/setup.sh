@@ -31,3 +31,10 @@ git clone https://github.com/anoopkunchukuttan/indic_nlp_library.git
 # sudo apt-get install gfortran -y
 # sudo apt-get install libatlas-base-dev -y
 # sudo apt-get install swig -y
+
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_10.0.130-1_amd64.deb \
+    && sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub \
+    && sudo apt-get update \
+    && sudo dpkg -i cuda-repo-ubuntu1604_10.0.130-1_amd64.deb \
+    && sudo apt-get update \
+    && sudo apt-get install -y cuda

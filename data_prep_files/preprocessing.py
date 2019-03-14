@@ -6,9 +6,9 @@ import string
 import pandas as pd
 from polyglot.text import Text
 
-wiki_dir = '../../data/corpora/wiki/'						# base directory for wiki articles
+# wiki_dir = '../../data/corpora/wiki/'						# base directory for wiki articles
 # WD_dir   = '../../data/corpora/webdunia/'					# base directory for webdunia articles
-# AJ_dir   = '../../data/corpora/andhrajyothy/'				# base directory for andhrajyothy articles
+AJ_dir   = '../../data/corpora/andhrajyothy/'				# base directory for andhrajyothy articles
 
 files_dir =  wiki_dir 										# AJ_dir (or) wiki_dir (or) WD_dir
 

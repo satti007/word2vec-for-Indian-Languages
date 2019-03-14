@@ -30,7 +30,6 @@ def saveTofile(save_dir,file_name,data):
 	np.save(save_dir+'{}.npy'.format(file_name),data)
 	print ('Saved {}.npy'.format(file_name))
 
-
 # function to create syl2idx, idx2syl dicts
 def createSyllableTables(word2idx,lang):
 	syl_idx  = 0
@@ -48,42 +47,6 @@ def createSyllableTables(word2idx,lang):
 	
 	return syl2idx,idx2syl,word2Sylidx
 
-# function to pad the syllables to make a batch of words have same no.of.syllables
-# words with 1,2,3     num of syllables, pad them so that all of them become 3 syllabi words
-# words with 4,5,6,7   num of syllables, pad them so that all of them become 7 syllabi words
-# words with 8,9,10,11 num of syllables, pad them so that all of them become 11 syllabi words
-def padSyllables_3c7c11(word2Sylidx,syl2idx):
-	pad_syl = len(syl2idx)
-	word2Sylidx_3  = {}
-	word2Sylidx_7  = {}
-	word2Sylidx_11 = {}
-	for word in word2Sylidx:
-		if len(word2Sylidx[word]) <= 3:
-			syllables = np.copy(word2Sylidx[word]).tolist()
-			syllables.extend([pad_syl]*(3-len(word2Sylidx[word])))
-			word2Sylidx_3[word] = syllables
-		elif len(word2Sylidx[word]) <= 7:
-			syllables = np.copy(word2Sylidx[word]).tolist()
-			syllables.extend([pad_syl]*(7-len(word2Sylidx[word])))
-			word2Sylidx_7[word] = syllables
-		else:
-			syllables = np.copy(word2Sylidx[word]).tolist()
-			syllables.extend([pad_syl]*(11-len(word2Sylidx[word])))
-			word2Sylidx_11[word] = syllables
-		
-	return word2Sylidx_3,word2Sylidx_7,word2Sylidx_11
-
-def padSyllables_to7(word2Sylidx,syl2idx):
-	pad_syl = len(syl2idx)
-	word2Sylidx_3to7 = {}
-	for word in word2Sylidx:
-		if len(word2Sylidx[word]) >= 3 and len(word2Sylidx[word]) <= 7:
-			syllables = np.copy(word2Sylidx[word]).tolist()
-			syllables.extend([pad_syl]*(7-len(word2Sylidx[word])))
-			word2Sylidx_3to7[word] = syllables
-		
-	return word2Sylidx_3to7
-
 # function for sampling
 def subSampling(tokens,vocab,word2freq,idx2word,threshold):
 	total_count   = sum(word2freq.values())
@@ -95,14 +58,14 @@ def subSampling(tokens,vocab,word2freq,idx2word,threshold):
 # function to create word2idx, idx2word dicts
 def createLookuptables(train_vocab,word2freq):
 	sorted_vocab = sorted(train_vocab, key=lambda word: word2freq[word], reverse=True)	# sort the words by their frequency
-	idx2word = {idx  : word for idx, word in enumerate(sorted_vocab)}					# idx2word dict {0:w1, 1:w2,....}	
-	word2idx = {word : idx for idx, word in idx2word.items()}							# word2idx dict {w1:0, w2:1,....}
+	idx2word = {idx  : word for idx, word in enumerate(sorted_vocab)}					# idx2word dict {0:w1, 1:w2,.}	
+	word2idx = {word : idx for idx, word in idx2word.items()}							# word2idx dict {w1:0, w2:1,.}
 	
 	return word2idx,idx2word
 
 # preprocessing function
 def preprocess(freq_file,data_file,save_dir,lang,minCount=5,wordMaxlen=1,doSampling=True,threshold=1e-5):
-	print ('Starting preprocessing...')
+	print ('Starting preprocessing')
 	word2freq_df = pd.read_csv(freq_file,header=None)						# load the word2freq dataframe
 	word2freq    = dict(zip(list(word2freq_df[0]),list(word2freq_df[1])))	# convert the dataframe to dict
 	all_vocab    = list(word2freq_df[0])									# vocabulary as list
@@ -110,8 +73,8 @@ def preprocess(freq_file,data_file,save_dir,lang,minCount=5,wordMaxlen=1,doSampl
 	train_vocab = [w for w in all_vocab if word2freq[w]>=minCount and len(w)<=wordMaxlen]	# valid vocab after freq,length cut-offs
 	print ('The number of words in vocabulary with freq >={} and length <={} are : {}K'.format(minCount,wordMaxlen,len(train_vocab)//pow(10,3)))
 	word2idx,idx2word = createLookuptables(train_vocab,word2freq)			# create word2idx, idx2word dicts
-	saveTofile(save_dir,'word2idx',word2idx)											
-	saveTofile(save_dir,'idx2word',idx2word)											
+	saveTofile(save_dir,'word2idx',word2idx)
+	saveTofile(save_dir,'idx2word',idx2word)
 	text  = open(data_file,'r').read()										# read the corpora file
 	all_words = text.split()												# get all the words
 	all_words = [w.strip() for w in all_words] 								# strip '\n', ' ' from the words
@@ -125,20 +88,19 @@ def preprocess(freq_file,data_file,save_dir,lang,minCount=5,wordMaxlen=1,doSampl
 		saveTofile(save_dir,'sampledTrain_words',np.asarray(train_words))
 	syl2idx,idx2syl,word2Sylidx = createSyllableTables(word2idx,lang)
 	print ('The total number of syllables are: ',len(syl2idx))
-	word2Sylidx_3,word2Sylidx_7,word2Sylidx_11 = padSyllables_3c7c11(word2Sylidx,syl2idx)
-	word2Sylidx_3to7 = padSyllables_to7(word2Sylidx,syl2idx)
-	train_words_3to7 = [w for w in train_words if w in word2Sylidx_3to7]
-	print ('The number of words in vocabulary with num of syll 3to7 are : {}K'.format(len(word2Sylidx_3to7)//pow(10,3)))
-	print ('The number of tokens in corpora   with num of syll 3to7 are : {}M'.format(len(train_words_3to7)//pow(10,6)))
 	saveTofile(save_dir,'syl2idx',syl2idx)
 	saveTofile(save_dir,'idx2syl',idx2syl)
 	saveTofile(save_dir,'word2Sylidx'   ,word2Sylidx)
-	saveTofile(save_dir,'word2Sylidx_3' ,word2Sylidx_3)
-	saveTofile(save_dir,'word2Sylidx_7' ,word2Sylidx_7)
-	saveTofile(save_dir,'word2Sylidx_11',word2Sylidx_11)
-	saveTofile(save_dir,'word2Sylidx_3to7',word2Sylidx_3to7)
-	saveTofile(save_dir,'train_words_3to7',np.asarray(train_words_3to7))
 	
+# A function for anneal(T/F) argument
+def str2bool(v):
+	if v.lower() in ('yes', 'true', 't', 'y', '1'):
+		return True
+	elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+		return False
+	else:
+		raise argparse.ArgumentTypeError('Boolean value expected.')
+
 # function to get the arguments
 def get_arguments():
 	ap = argparse.ArgumentParser()
@@ -148,10 +110,10 @@ def get_arguments():
 	ap.add_argument('--lang',      type=str)					# corpora language needed for the syllabification
 	ap.add_argument('--minCount'  , type=int,  default = 5)		# (min) word freq cut-off
 	ap.add_argument('--wordMaxlen', type=int,  default = 1)		# (max) word length cut-off
-	ap.add_argument('--doSampling', type=bool, default = True)	# do subSampling if true 
+	ap.add_argument('--doSampling', type=str2bool, default = True)	# do subSampling if true 
 	ap.add_argument('--threshold' , type=float,default = 1e-5)	# subSampling threshold
 	
-	print ('Parsing the Arguments...')
+	print ('Parsing the Arguments')
 	args = vars(ap.parse_args())
 	
 	lang = args['lang']

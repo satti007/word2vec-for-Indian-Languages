@@ -39,7 +39,7 @@ idx2syl        = train_data[0]
 idx2word       = train_data[1]
 train_words    = train_data[2]
 word2Sylidx    = train_data[3]
-# train_words    = train_words[:100000]
+train_words    = train_words[:100000]
 lr ,ws  = train_params[0],train_params[1]
 dim,neg = train_params[2],train_params[3]
 epochs  ,batch_size = train_params[4],train_params[5]
@@ -50,14 +50,14 @@ n_batches   = len(train_words)//batch_size
 train_words = train_words[:n_batches*batch_size]
 
 embd_dim = dim
-filters  = rep_dim/5
+filters  = rep_dim/4
 n_vocab  = len(idx2word)
 n_embds  = len(idx2syl) + 1
 
 _mask        = np.ones([n_embds,embd_dim])
 _mask[-1][:] = np.zeros([1,embd_dim])
 
-log_train = open('log_train.txt','w',0)
+log_train = open('log_train.txt','wb',0)
 
 def cnnLayer(l,embd_dim,inputs):
 	layer_l = conv2d(inputs,filters,[l,embd_dim],1,'VALID')
@@ -78,13 +78,15 @@ with train_graph.as_default():
 	softmax_b = tf.Variable(tf.zeros(n_vocab))
 	input_p   = tf.expand_dims(embeds_lookup, -1)
 	
-	max_2 = cnnLayer(2,embd_dim,input_p)
-	max_3 = cnnLayer(3,embd_dim,input_p)
-	max_4 = cnnLayer(4,embd_dim,input_p)
-	max_5 = cnnLayer(5,embd_dim,input_p)
-	max_6 = cnnLayer(6,embd_dim,input_p)
+	max_1 = cnnLayer(4,embd_dim,input_p)
+	max_2 = cnnLayer(5,embd_dim,input_p)
+	max_3 = cnnLayer(6,embd_dim,input_p)
+	max_4 = cnnLayer(7,embd_dim,input_p)
+	# max_5 = cnnLayer(5,embd_dim,input_p)
+	# max_6 = cnnLayer(6,embd_dim,input_p)
 	
-	word_rep = tf.concat([max_2,max_3,max_4,max_5,max_6],axis=1)
+	word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+	# word_rep = tf.concat([max_2,max_3,max_4,max_5,max_6],axis=1)
 		
 	loss = tf.nn.sampled_softmax_loss(weights=softmax_w,biases=softmax_b,
 									  labels=labels,inputs=word_rep,
@@ -124,6 +126,6 @@ with tf.Session(graph=train_graph) as sess:
 				start_time = time.time()
 			iteration = iteration + 1
 		print ('Weights saved at {} epoch, avg_epoch_loss: {:.4f}'.format(e+1+state,epoch_loss/(iteration)))
-		log_train.write('Weights saved at {} epoch, avg_epoch_loss: {:.4f}\n'.format(e+1+state,epoch_loss/(iteration)))
+		log_train.write(('Weights saved at {} epoch, avg_epoch_loss: {:.4f}\n'.format(e+1+state,epoch_loss/(iteration))).encode('utf-8'))
 		Wts = [p.eval(session=sess) for p in tf.trainable_variables()]
 		np.savez(save_dir+"/weights_"+str(e+1+state)+".npz", *Wts)
