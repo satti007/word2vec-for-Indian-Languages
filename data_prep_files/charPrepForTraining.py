@@ -1,19 +1,17 @@
+'''
+* @file charPrepForTraining.py
+* @author Satish Golla <gsatishkumaryadav@gmail.com>
+* @date Sat Mar 23 08:45:23 IST 2019
+* @Contains code for chars preparing data for traning
+'''
+
+import sys
+sys.path.insert(0, '../utilities_files/')
+
 import re
 import numpy as np
+import commonFuctions
 re_tel = re.compile(u'[^\u0C00-\u0C7F]+') # regex for only telugu characters
-
-# function to save the data as file_name.npy
-def saveTofile(data_dir,file_name,data):
-	np.save(data_dir+'{}.npy'.format(file_name),data)
-	print ('Saved {}.npy'.format(file_name))
-
-# function to load the data from file_name.npy
-def loadFile(file_name,isDict):
-	print ('Loaded {}'.format(file_name))
-	if isDict:
-		return np.load(file_name).item()
-	
-	return np.load(file_name)
 
 # function to create char2idx,idx2char dicts
 def createCharTables(word2idx):
@@ -21,8 +19,8 @@ def createCharTables(word2idx):
 	word2Chidx = {}
 	char2idx,idx2char = {},{}
 	for word in word2idx:
-		word  = re_tel.sub(r'',word)
-		chars = list(word)
+		word1 = re_tel.sub(r'',word)
+		chars = list(word1)
 		for ch in chars:
 			if ch not in char2idx:
 				char2idx[ch] = ch_idx
@@ -32,7 +30,6 @@ def createCharTables(word2idx):
 		word2Chidx[word2idx[word]] = [char2idx[ch] for ch in chars]
 	
 	return char2idx,idx2char,word2Chidx
-
 
 def padChars_toMax(word2Chidx,char2idx,Min,Max):
 	pad_ch        = len(char2idx)
@@ -50,20 +47,23 @@ def padChars_toMax(word2Chidx,char2idx,Min,Max):
 	return word2Chidx_MintoMax,char_MintoMax
 
 
-data_dir = '../../../data/corpora/andhrajyothy/stats/'
-word2idx = loadFile(data_dir+'word2idx.npy',1)
+corpora_name = sys.argv[1]
+train_file   = sys.argv[2]
+Min, Max = int(sys.argv[3]),int(sys.argv[4])
+
+data_dir = '../../../data/corpora/{}/stats/'.format(corpora_name)
+word2idx = commonFuctions.load_npyFile(data_dir+'word2idx.npy',1)
 char2idx,idx2char,word2Chidx = createCharTables(word2idx)
-saveTofile(data_dir,'char2idx',char2idx)
-saveTofile(data_dir,'idx2char',idx2char)
-saveTofile(data_dir,'word2Chidx',word2Chidx)
+print ('The total number of chars are: ',len(char2idx))
+commonFuctions.saveTofile(data_dir,'char2idx',char2idx)
+commonFuctions.saveTofile(data_dir,'idx2char',idx2char)
+commonFuctions.saveTofile(data_dir,'word2Chidx',word2Chidx)
 
-
-Min, Max = 4,7
-train_words = loadFile(data_dir+'train_words.npy',0)
+train_words = commonFuctions.load_npyFile(data_dir+'{}.npy'.format(train_file),0)
 word2Chidx_MintoMax,char_MintoMax = padChars_toMax(word2Chidx,char2idx,Min,Max)
 train_words_MintoMax = [w for w in train_words if w in word2Chidx_MintoMax]
 print ('The number of chars in words  with num of chars {}to{} are : {}'.format(Min,Max,len(char_MintoMax)))
 print ('The number of words in vocabulary with num of chars {}to{} are : {}K'.format(Min,Max,len(word2Chidx_MintoMax)//pow(10,3)))
 print ('The number of tokens in corpora   with num of chars {}to{} are : {}M'.format(Min,Max,len(train_words_MintoMax)//pow(10,6)))
-saveTofile(data_dir,'word2Chidx_{}to{}'.format(Min,Max),word2Chidx_MintoMax)
-saveTofile(data_dir,'train_words_{}to{}'.format(Min,Max),np.asarray(train_words_MintoMax))
+commonFuctions.saveTofile(data_dir,'word2Chidx_{}to{}'.format(Min,Max),word2Chidx_MintoMax)
+commonFuctions.saveTofile(data_dir,'train_words_{}to{}'.format(Min,Max),np.asarray(train_words_MintoMax))

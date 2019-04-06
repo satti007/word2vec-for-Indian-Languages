@@ -1,17 +1,36 @@
+'''
+* @file sylPrepForTraining.py
+* @author Satish Golla <gsatishkumaryadav@gmail.com>
+* @date Sat Mar 23 08:45:23 IST 2019
+* @Contains code for syllables preparing data for traning
+'''
+
+import sys
+sys.path.insert(0, '../utilities_files/')
+
 import numpy as np
+import pandas as pd
+import commonFuctions
+import syllabification
 
-# function to save the data as file_name.npy
-def saveTofile(save_dir,file_name,data):
-	np.save(save_dir+'{}.npy'.format(file_name),data)
-	print ('Saved {}.npy'.format(file_name))
+np.random.seed(1234)
 
-# function to load the data from file_name.npy
-def loadFile(file_name,isDict):
-	print ('Loaded {}'.format(file_name))
-	if isDict:
-		return np.load(file_name).item()
+# function to create syl2idx, idx2syl dicts
+def createSyllableTables(word2idx,lang):
+	syl_idx  = 0
+	word2Sylidx = {}
+	syl2idx,idx2syl = {},{}
+	for word in word2idx:
+		syllables = syllabification.getSyllables(word,lang)
+		for syl in syllables:
+			if syl not in syl2idx:
+				syl2idx[syl] = syl_idx
+				idx2syl[syl_idx] = syl
+				syl_idx = syl_idx + 1
+		
+		word2Sylidx[word2idx[word]] = [syl2idx[syl] for syl in syllables]
 	
-	return np.load(file_name)
+	return syl2idx,idx2syl,word2Sylidx
 
 def padSyllables_toMax(word2Sylidx,syl2idx,Min,Max):
 	pad_syl      = len(syl2idx)
@@ -28,18 +47,30 @@ def padSyllables_toMax(word2Sylidx,syl2idx,Min,Max):
 	syl_MintoMax.append(pad_syl)
 	return word2Sylidx_MintoMax,syl_MintoMax
 
-data_dir    = '../../../data/corpora/andhrajyothy/stats/'
-Min, Max    = 2,6
-syl2idx     = loadFile(data_dir+'syl2idx.npy',1)
-word2Sylidx = loadFile(data_dir+'word2Sylidx.npy',1)
-train_words = loadFile(data_dir+'train_words.npy',0)
+corpora_name = sys.argv[1]
+train_file   = sys.argv[2]
+Min, Max = int(sys.argv[3]),int(sys.argv[4])
+
+lang = 'te'
+data_dir = '../../../data/corpora/{}/stats/'.format(corpora_name)
+word2idx = commonFuctions.load_npyFile(data_dir+'word2idx.npy',1)
+syl2idx,idx2syl,word2Sylidx = createSyllableTables(word2idx,lang)
+print ('The total number of syllables are: ',len(syl2idx))
+commonFuctions.saveTofile(data_dir,'syl2idx',syl2idx)
+commonFuctions.saveTofile(data_dir,'idx2syl',idx2syl)
+commonFuctions.saveTofile(data_dir,'word2Sylidx',word2Sylidx)
+
+train_words = commonFuctions.load_npyFile(data_dir+'{}.npy'.format(train_file),0)
 word2Sylidx_MintoMax,syl_MintoMax = padSyllables_toMax(word2Sylidx,syl2idx,Min,Max)
 train_words_MintoMax = [w for w in train_words if w in word2Sylidx_MintoMax]
 print ('The number of syllables in words  with num of syll {}to{} are : {}'.format(Min,Max,len(syl_MintoMax)))
 print ('The number of words in vocabulary with num of syll {}to{} are : {}K'.format(Min,Max,len(word2Sylidx_MintoMax)//pow(10,3)))
 print ('The number of tokens in corpora   with num of syll {}to{} are : {}M'.format(Min,Max,len(train_words_MintoMax)//pow(10,6)))
-saveTofile(data_dir,'word2Sylidx_{}to{}'.format(Min,Max),word2Sylidx_MintoMax)
-saveTofile(data_dir,'train_words_{}to{}'.format(Min,Max),np.asarray(train_words_MintoMax))
+commonFuctions.saveTofile(data_dir,'word2Sylidx_{}to{}'.format(Min,Max),word2Sylidx_MintoMax)
+commonFuctions.saveTofile(data_dir,'train_words_{}to{}'.format(Min,Max),np.asarray(train_words_MintoMax))
+
+
+
 
 
 '''
@@ -69,7 +100,7 @@ def padSyllables_3c7c11(word2Sylidx,syl2idx):
 	return word2Sylidx_3,word2Sylidx_7,word2Sylidx_11
 
 word2Sylidx_3,word2Sylidx_7,word2Sylidx_11 = padSyllables_3c7c11(word2Sylidx,syl2idx)
-saveTofile(save_dir,'word2Sylidx_3' ,word2Sylidx_3)
-saveTofile(save_dir,'word2Sylidx_7' ,word2Sylidx_7)
-saveTofile(save_dir,'word2Sylidx_11',word2Sylidx_11)
+commonFuctions.saveTofile(save_dir,'word2Sylidx_3' ,word2Sylidx_3)
+commonFuctions.saveTofile(save_dir,'word2Sylidx_7' ,word2Sylidx_7)
+commonFuctions.saveTofile(save_dir,'word2Sylidx_11',word2Sylidx_11)
 '''

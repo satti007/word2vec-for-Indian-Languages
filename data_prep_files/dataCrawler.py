@@ -1,3 +1,10 @@
+'''
+* @file dataCrawler.py
+* @author Satish Golla <gsatishkumaryadav@gmail.com>
+* @date Wed Aug 1 09:22:34 IST 2018
+* @Contains code for data crawling
+'''
+
 import re
 import os
 import requests
