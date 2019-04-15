@@ -82,3 +82,19 @@ def get_stats(word_to_freq,tot_sen,uni_sen,files_dir,punctuation):
 	vocab_20   = sum(1 for f in word_to_freq.values() if f >= 20)
 	
 	save_stats([tot_sen,uni_sen,tot_vocab,pun_vocab,tot_tokens,pun_tokens,vocab_5,vocab_10,vocab_20],files_dir)
+
+
+'''
+import pickle
+import numpy as np
+
+char2idx = np.load('char2idx.npy').item()
+
+name = 'char2idx.pkl'
+obj  = char2idx
+def save_obj(obj,name):
+	with open(name,'wb') as f:
+		pickle.dump(obj,f)
+
+save_obj(obj,name)
+'''

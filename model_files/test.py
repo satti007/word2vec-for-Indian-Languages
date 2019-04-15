@@ -21,33 +21,41 @@ tf.set_random_seed(1234)
 minlen,maxlen,models_dir,model_type,weights_dir,language,data_dir,sim_file_path = utilsForTest.parseArguments()
 pair2score,word2Unitidx,vocabSize = utilsForTest.get_wordUnits(minlen,maxlen,language,model_type,data_dir,sim_file_path)
 
-unitEmbd_dim     = 300
-wordRep_dim      = int(weights_dir.split('_')[-1].strip('/'))
-cnn_numFilters   = wordRep_dim//4
+embd_dim     = 300
+unit         = model_type.split('_')[-1].strip('/')
+wordRep_dim  = int(weights_dir.split('_')[-1].strip('/'))
 
 CNN_flag = 0
 if model_type[:3] == 'CNN':
 	CNN_flag = 1
-	if model_type[-4:].strip('/') == 'syl':
+	if unit == 'syl':
 		widths = [1,2,3,4]
 	else:
-		widths = [4,5,6,7]
+		widths = [4,5,6,7,8,9,10]
 else:
-	unitEmbd_dim = wordRep_dim
+	embd_dim = wordRep_dim
+
+n_filters   = wordRep_dim//len(widths)
 
 train_graph = tf.Graph()
 with train_graph.as_default():
 	inputs  = tf.placeholder(tf.int32 ,[None,None],name='inputs')
-	embeds_matrix = tf.Variable(tf.random_uniform((vocabSize,unitEmbd_dim), -1, 1),name='embeds_matrix')
+	embeds_matrix = tf.Variable(tf.random_uniform((vocabSize,embd_dim), -1, 1),name='embeds_matrix')
 	embeds_lookup = tf.nn.embedding_lookup(embeds_matrix,inputs,max_norm=1)
 	
 	if CNN_flag:
 		input_p   = tf.expand_dims(embeds_lookup, -1)	
-		max_1 = tensorflowFuntions.cnnLayer(widths[0],unitEmbd_dim,input_p,cnn_numFilters,maxlen)
-		max_2 = tensorflowFuntions.cnnLayer(widths[1],unitEmbd_dim,input_p,cnn_numFilters,maxlen)
-		max_3 = tensorflowFuntions.cnnLayer(widths[2],unitEmbd_dim,input_p,cnn_numFilters,maxlen)
-		max_4 = tensorflowFuntions.cnnLayer(widths[3],unitEmbd_dim,input_p,cnn_numFilters,maxlen)
-		word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+		max_1 = tensorflowFuntions.cnnLayer(widths[0],embd_dim,input_p,n_filters,maxlen)
+		max_2 = tensorflowFuntions.cnnLayer(widths[1],embd_dim,input_p,n_filters,maxlen)
+		max_3 = tensorflowFuntions.cnnLayer(widths[2],embd_dim,input_p,n_filters,maxlen)
+		max_4 = tensorflowFuntions.cnnLayer(widths[3],embd_dim,input_p,n_filters,maxlen)
+		if unit == 'char':
+			max_5    = tensorflowFuntions.cnnLayer(widths[4],embd_dim,input_p,n_filters,maxlen)
+			max_6    = tensorflowFuntions.cnnLayer(widths[5],embd_dim,input_p,n_filters,maxlen)
+			max_7    = tensorflowFuntions.cnnLayer(widths[6],embd_dim,input_p,n_filters,maxlen)
+			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5,max_6,max_7],axis=1)
+		elif unit == 'syl'
+			word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
 	else:
 		word_rep = tf.reduce_mean(embeds_lookup,axis=1)
 

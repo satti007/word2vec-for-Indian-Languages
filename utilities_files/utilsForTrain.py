@@ -39,6 +39,8 @@ def parseArguments():
 	ap.add_argument('--state'      , type=int     , default = None)
 	ap.add_argument('--l2reg'      , type=str2bool, default = False)
 	ap.add_argument('--beta'       , type=float   , default = 1e-3)
+	ap.add_argument('--dropOut'    , type=str2bool, default = False)
+	ap.add_argument('--prob'       , type=float   , default = 0.5)
 	
 	print ('Parsing the Arguments')
 	args = vars(ap.parse_args())
@@ -61,6 +63,8 @@ def parseArguments():
 	state    = args['state']
 	l2reg    = args['l2reg']
 	beta     = args['beta']
+	dropOut  = args['dropOut'] 
+	prob     = args['prob']
 	
 	print ('Arguments Parsing Done!')
 	print ('Arguments details   : ')
@@ -69,7 +73,8 @@ def parseArguments():
 	print ('epochs,batch_size       : ',epochs,batch_size)
 	print ('embd_dim,rep_dim        : ',embd_dim,rep_dim)
 	print ('save_dir,pretrain,state : ',pretrain,state,save_dir)
-	print ('l2reg,beta : ',l2reg,beta)
+	print ('l2reg,beta  : ',l2reg,beta)
+	print ('dropOut,prob: ',dropOut,prob)
 
 	idx2unit     = commonFuctions.load_npyFile(args['idx2unit']     ,True)
 	idx2word     = commonFuctions.load_npyFile(args['idx2word']     ,True)
@@ -77,7 +82,7 @@ def parseArguments():
 	train_words  = commonFuctions.load_npyFile(args['train_words']  ,False)
 	train_words  = train_words.tolist()
 	
-	return [idx2unit,idx2word,word2Unitidx,train_words],[unit,model,maxlen,lr,ws,neg,epochs,embd_dim,rep_dim,batch_size,save_dir,pretrain,state,l2reg,beta,num_layers]
+	return [idx2unit,idx2word,word2Unitidx,train_words],[unit,model,maxlen,lr,ws,neg,epochs,embd_dim,rep_dim,batch_size,save_dir,pretrain,state,l2reg,beta,num_layers,dropOut,prob]
 
 def getTarget_word(words,idx,ws):
 	word_ws = np.random.randint(1,ws+1)

@@ -33,6 +33,7 @@ embd_dim,rep_dim    = train_params[7],train_params[8]
 batch_size,save_dir = train_params[9],train_params[10]
 pretrain,state      = train_params[11],train_params[12]
 l2reg,beta          = train_params[13],train_params[14]
+dropOut,prob        = train_params[16],train_params[17]
 
 n_vocab     = len(idx2word)
 n_embds     = len(idx2unit) + 1
@@ -49,7 +50,7 @@ if model == 'CNN':
 	if unit == 'syl':
 		widths = [1,2,3,4]
 	else:
-		widths = [4,5,6,7]
+		widths = [4,5,6,7,8,9,10]
 else:
 	embd_dim = rep_dim
 
@@ -65,14 +66,24 @@ with train_graph.as_default():
 	softmax_b = tf.Variable(tf.zeros(n_vocab))
 	
 	if CNN_flag:
-		input_p   = tf.expand_dims(embeds_lookup, -1)	
-		max_1 = tensorflowFuntions.cnnLayer(widths[0],embd_dim,input_p,n_filters,maxlen)
-		max_2 = tensorflowFuntions.cnnLayer(widths[1],embd_dim,input_p,n_filters,maxlen)
-		max_3 = tensorflowFuntions.cnnLayer(widths[2],embd_dim,input_p,n_filters,maxlen)
-		max_4 = tensorflowFuntions.cnnLayer(widths[3],embd_dim,input_p,n_filters,maxlen)
-		word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+		input_p = tf.expand_dims(embeds_lookup, -1)	
+		max_1   = tensorflowFuntions.cnnLayer(widths[0],embd_dim,input_p,n_filters,maxlen)
+		max_2   = tensorflowFuntions.cnnLayer(widths[1],embd_dim,input_p,n_filters,maxlen)
+		max_3   = tensorflowFuntions.cnnLayer(widths[2],embd_dim,input_p,n_filters,maxlen)
+		max_4   = tensorflowFuntions.cnnLayer(widths[3],embd_dim,input_p,n_filters,maxlen)
+		if unit == 'char':
+			max_5    = tensorflowFuntions.cnnLayer(widths[4],embd_dim,input_p,n_filters,maxlen)
+			max_6    = tensorflowFuntions.cnnLayer(widths[5],embd_dim,input_p,n_filters,maxlen)
+			max_7    = tensorflowFuntions.cnnLayer(widths[6],embd_dim,input_p,n_filters,maxlen)
+			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5,max_6,max_7],axis=1)
+		elif unit == 'syl':
+			word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
 	else:
 		word_rep = tf.reduce_mean(embeds_lookup,axis=1)
+
+	if dropOut:
+		print ("AA")
+		word_rep = tf.nn.dropout(word_rep,keep_prob=prob)
 	
 	loss = tf.nn.sampled_softmax_loss(weights=softmax_w, biases=softmax_b,
 									  labels=labels    , inputs=word_rep,
@@ -106,7 +117,7 @@ with tf.Session(graph=train_graph) as sess:
 		avg_loss   = 0
 		epoch_loss = 0
 		iteration  = 0
-		show_step  = 10
+		show_step  = 1
 		start_time = time.time()
 		epoch_time = time.time()
 		batch_data = utilsForTrain.get_batches(train_words,word2Unitidx,batch_size,ws)

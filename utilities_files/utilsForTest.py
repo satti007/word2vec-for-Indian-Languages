@@ -43,13 +43,13 @@ def parseArguments():
 	
 	print ('Arguments Parsing Done!')
 	print ('Arguments details : ')
-	print ('minlen, maxlen: ',minlen,maxlen)
-	print ('models_dir : ', models_dir)
-	print ('model_type : ', model_type)
-	print ('weights_dir: ', weights_dir)
-	print ('language   : ', language)
-	print ('data_dir     : ', data_dir)
-	print ('sim_file_path: \n', sim_file_path)
+	print ('minlen, maxlen : ', minlen,maxlen)
+	print ('models_dir     : ', models_dir)
+	print ('model_type     : ', model_type)
+	print ('weights_dir    : ', weights_dir)
+	print ('language       : ', language)
+	print ('data_dir       : ', data_dir)
+	print ('sim_file_path  : ', sim_file_path)
 	
 	return minlen,maxlen,models_dir,model_type,weights_dir,language,data_dir,sim_file_path
 
@@ -83,7 +83,7 @@ def checkValidity(w1_unit,w2_unit,minlen,maxlen):
 
 def get_wordUnits(minlen,maxlen,language,model_type,data_dir,sim_file_path):
 	data         = open(sim_file_path).readlines()
-	unit         = model_type.split('_')[1].strip('/')
+	unit         = model_type.split('_')[-1].strip('/')
 	unit2idx     = commonFuctions.load_pickleFile(data_dir + unit +'2idx.pkl')
 	padUnit_idx  = len(unit2idx)
 	OOV_units    = []
