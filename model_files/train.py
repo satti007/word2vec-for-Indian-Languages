@@ -49,8 +49,10 @@ if model == 'CNN':
 	CNN_flag = 1
 	if unit == 'syl':
 		widths = [1,2,3,4]
-	else:
+	elif unit == 'char':
 		widths = [4,5,6,7,8,9,10]
+	else:
+		widths = [2,3,4,5,6]
 else:
 	embd_dim = rep_dim
 
@@ -78,11 +80,13 @@ with train_graph.as_default():
 			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5,max_6,max_7],axis=1)
 		elif unit == 'syl':
 			word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+		else:
+			max_5    = tensorflowFuntions.cnnLayer(widths[4],embd_dim,input_p,n_filters,maxlen)
+			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5],axis=1)			
 	else:
 		word_rep = tf.reduce_mean(embeds_lookup,axis=1)
 
 	if dropOut:
-		print ("AA")
 		word_rep = tf.nn.dropout(word_rep,keep_prob=prob)
 	
 	loss = tf.nn.sampled_softmax_loss(weights=softmax_w, biases=softmax_b,

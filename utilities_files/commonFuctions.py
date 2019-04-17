@@ -88,13 +88,12 @@ def get_stats(word_to_freq,tot_sen,uni_sen,files_dir,punctuation):
 import pickle
 import numpy as np
 
-char2idx = np.load('char2idx.npy').item()
-
-name = 'char2idx.pkl'
-obj  = char2idx
 def save_obj(obj,name):
 	with open(name,'wb') as f:
 		pickle.dump(obj,f)
 
+hyb2idx = np.load('hyb2idx.npy').item()
+name = 'hyb2idx.pkl'
+obj  = hyb2idx
 save_obj(obj,name)
 '''

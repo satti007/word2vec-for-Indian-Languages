@@ -6,8 +6,8 @@
 '
 
 python3 -u -W ignore test.py \
-			--minlen 1 --maxlen 4\
-			--models_dir models/SD/ --model_type CNN_syl/ \
-			--weights_dir weights_200/ --language telugu \
+			--minlen 2 --maxlen 6\
+			--models_dir models/FD/ --model_type CNN_hybrid/ \
+			--weights_dir weights_500/ --language telugu \
 			--sim_file_path ../../../data/WordSim/Telugu-WS.txt\
-			--data_dir   ../../../data/corpora/andhrajyothy/stats/
+			--data_dir   ../../../data/corpora/all_combined/stats/

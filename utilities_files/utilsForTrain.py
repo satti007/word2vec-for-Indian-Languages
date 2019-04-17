@@ -19,7 +19,7 @@ def str2bool(v):
 
 def parseArguments():
 	ap = argparse.ArgumentParser()
-	ap.add_argument('--unit'    , type=str, choices=['char','syl'])
+	ap.add_argument('--unit'    , type=str, choices=['char','syl','hyb'])
 	ap.add_argument('--model'   , type=str, choices=['CNN' ,'Mean'])
 	ap.add_argument('--maxlen'  , type=int)
 	ap.add_argument('--idx2unit', type=str)

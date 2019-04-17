@@ -22,7 +22,7 @@ def parseArguments():
 	ap.add_argument('--maxlen',type=int)
 	
 	ap.add_argument('--models_dir' ,type=str)
-	ap.add_argument('--model_type' ,type=str,choices=['CNN_syl/','CNN_char/','Mean_syl/'])
+	ap.add_argument('--model_type' ,type=str,choices=['CNN_syl/','CNN_char/','Mean_syl/','CNN_hyb/'])
 	ap.add_argument('--weights_dir',type=str)
 	
 	ap.add_argument('--language'     , type=str)
@@ -69,7 +69,7 @@ def checkOOV(w,w_unit,unit2idx,maxlen,padUnit_idx,OOV,OOV_units):
 		print ('They are : ',units)
 		OOV_units.extend(units)
 	wordUnits.extend([padUnit_idx]*(maxlen-len(w_unit)))
-	return wordUnits,OOV,OOV_units
+	return wordUnits,OOV,list(set(OOV_units))
 
 def checkValidity(w1_unit,w2_unit,minlen,maxlen):
 	if len(w1_unit) >= minlen and len(w1_unit) <= maxlen:
@@ -80,6 +80,28 @@ def checkValidity(w1_unit,w2_unit,minlen,maxlen):
 	else:
 		return False
 
+def get_hybridUnits(word,unit2idx,lang,OOV,OOV_units):
+	hyb   = []
+	units = []
+	syllables = syllabification.getSyllables(word,lang)
+	for syl in syllables:
+		if syl in unit2idx:
+			hyb.append(unit2idx[syl])
+		else:
+			syl_ch = list(syl)
+			for ch in syl_ch:
+				if ch in unit2idx:
+					hyb.append(unit2idx[ch])
+				else:
+					OOV = True
+					units.append(ch)
+					hyb.append(len(unit2idx))
+	if OOV:
+		print ('This word {} has OOV units'.format(w))
+		print ('They are : ',units)
+		OOV_units.extend(units)
+	
+	return hyb,OOV,list(set(OOV_units))
 
 def get_wordUnits(minlen,maxlen,language,model_type,data_dir,sim_file_path):
 	data         = open(sim_file_path).readlines()
@@ -98,20 +120,39 @@ def get_wordUnits(minlen,maxlen,language,model_type,data_dir,sim_file_path):
 		if unit == 'syl':
 			w1_unit = syllabification.getSyllables(w1,language[:2])
 			w2_unit = syllabification.getSyllables(w2,language[:2])
+		elif unit == 'char':
+			w1,w2   = re_tel.sub(r'',w1),re_tel.sub(r'',w2)
+			w1_unit = list(w1)
+			w2_unit = list(w2)
 		else:
-			w1_unit = list(re_tel.sub(r'',w1))
-			w2_unit = list(re_tel.sub(r'',w2))
-		
-		if checkValidity(w1_unit,w2_unit,minlen,maxlen):
-			w1_unit,OOV1,OOV_units = checkOOV(w1,w1_unit,unit2idx,maxlen,padUnit_idx,OOV1,OOV_units)
-			w2_unit,OOV2,OOV_units = checkOOV(w2,w2_unit,unit2idx,maxlen,padUnit_idx,OOV2,OOV_units)
+			w1,w2   = re_tel.sub(r'',w1),re_tel.sub(r'',w2)
+			w1_unit,OOV1,OOV_units = get_hybridUnits(w1,unit2idx,language[:2],OOV1,OOV_units)
+			w2_unit,OOV2,OOV_units = get_hybridUnits(w2,unit2idx,language[:2],OOV2,OOV_units)
 			if not OOV1 and not OOV2:
-				word2Unitidx[w1]    = w1_unit
-				word2Unitidx[w2]    = w2_unit
-				pair2score[(w1,w2)] = s
-		else:
-			print ('Invalid pair: {}, {}'.format(w1,w2))
-
+				if checkValidity(w1_unit,w2_unit,minlen,maxlen):
+					w1_unit.extend([padUnit_idx]*(maxlen-len(w1_unit)))
+					w2_unit.extend([padUnit_idx]*(maxlen-len(w2_unit)))
+					word2Unitidx[w1]    = w1_unit
+					word2Unitidx[w2]    = w2_unit
+					pair2score[(w1,w2)] = s
+				else:
+					print ('Invalid pair: {}, {}'.format(w1,w2))
+			else:
+				print ('Invalid pair: {}, {}'.format(w1,w2))
+		
+		if unit != 'hyb':
+			if checkValidity(w1_unit,w2_unit,minlen,maxlen):
+				w1_unit,OOV1,OOV_units = checkOOV(w1,w1_unit,unit2idx,maxlen,padUnit_idx,OOV1,OOV_units)
+				w2_unit,OOV2,OOV_units = checkOOV(w2,w2_unit,unit2idx,maxlen,padUnit_idx,OOV2,OOV_units)
+				if not OOV1 and not OOV2:
+					word2Unitidx[w1]    = w1_unit
+					word2Unitidx[w2]    = w2_unit
+					pair2score[(w1,w2)] = s
+				else:
+					print ('Invalid pair: {}, {}'.format(w1,w2))
+			else:
+				print ('Invalid pair: {}, {}'.format(w1,w2))
+	
 	if len(OOV_units) > 0:
 		OOV_units = list(set(OOV_units))
 		print ('')

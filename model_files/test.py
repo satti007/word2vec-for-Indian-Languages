@@ -30,12 +30,14 @@ if model_type[:3] == 'CNN':
 	CNN_flag = 1
 	if unit == 'syl':
 		widths = [1,2,3,4]
-	else:
+	elif unit == 'char' :
 		widths = [4,5,6,7,8,9,10]
+	else:
+		widths = [2,3,4,5,6]
+	n_filters   = wordRep_dim//len(widths)
 else:
 	embd_dim = wordRep_dim
 
-n_filters   = wordRep_dim//len(widths)
 
 train_graph = tf.Graph()
 with train_graph.as_default():
@@ -54,8 +56,11 @@ with train_graph.as_default():
 			max_6    = tensorflowFuntions.cnnLayer(widths[5],embd_dim,input_p,n_filters,maxlen)
 			max_7    = tensorflowFuntions.cnnLayer(widths[6],embd_dim,input_p,n_filters,maxlen)
 			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5,max_6,max_7],axis=1)
-		elif unit == 'syl'
+		elif unit == 'syl':
 			word_rep = tf.concat([max_1,max_2,max_3,max_4],axis=1)
+		else:
+			max_5    = tensorflowFuntions.cnnLayer(widths[4],embd_dim,input_p,n_filters,maxlen)
+			word_rep = tf.concat([max_1,max_2,max_3,max_4,max_5],axis=1)			
 	else:
 		word_rep = tf.reduce_mean(embeds_lookup,axis=1)
 
